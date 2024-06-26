@@ -11,14 +11,40 @@ type Block struct {
 	prevHash string
 }
 
+type Blockchain struct {
+	blocks []Block
+}
+
+func (blockchain Blockchain) getLastHash() string {
+	if len(blockchain.blocks) > 0 {
+		return blockchain.blocks[len(blockchain.blocks) - 1].hash
+	}
+	return ""
+}
+
+func (blockchain *Blockchain) addBlock(data string) {
+	// 1. 추가할 블록 생성
+	newBlock := Block{data, "", blockchain.getLastHash()}
+	// 2. 추가할 블록의 해시 생성(data + 이전 블록의 해시)
+	hash := sha256.Sum256([]byte(newBlock.data + newBlock.prevHash))
+	// 3. 추가할 블록의 해시 업데이트(16진수 string으로 변환)
+	newBlock.hash = fmt.Sprintf("%x", hash)
+	// 4. 블록체인에 블록 추가
+	blockchain.blocks = append(blockchain.blocks, newBlock)
+}
+
+func (blockchain Blockchain) listBlocks() {
+	for _, block := range blockchain.blocks {
+		fmt.Printf("Data: %s\n", block.data)
+		fmt.Printf("Hash: %s\n", block.hash)
+		fmt.Printf("Previous Hash: %s\n", block.prevHash)
+	}
+}
+
 func main() {
-	// 1. 새로 추가할 블록을 생성한다.
-	block := Block{"data", "", ""}
-	// 2. [data + 이전 해시]를 byte 타입의 slice로 변환하여 해싱한다.
-	hash := sha256.Sum256([]byte(block.data + block.prevHash))
-	// 3. 해시를 16진수 string으로 변환한다.
-	hexHash := fmt.Sprintf("%x", hash)
-	// 4. 블록의 해시에 저장한다.
-	block.hash = hexHash
-	fmt.Println(block)
+	blockchain := Blockchain{}
+	blockchain.addBlock("First Block")
+	blockchain.addBlock("Second Block")
+	blockchain.addBlock("Third Block")
+	blockchain.listBlocks()
 }
