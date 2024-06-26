@@ -1,20 +1,8 @@
 package main
 
-import (
-	"crypto/sha256"
-	"fmt"
-)
+import "github.com/dawwson/nomadcoin/blockchain"
 
-type Block struct {
-	data string
-	hash string
-	prevHash string
-}
-
-type Blockchain struct {
-	blocks []Block
-}
-
+/*
 func (blockchain Blockchain) getLastHash() string {
 	if len(blockchain.blocks) > 0 {
 		return blockchain.blocks[len(blockchain.blocks) - 1].hash
@@ -40,11 +28,7 @@ func (blockchain Blockchain) listBlocks() {
 		fmt.Printf("Previous Hash: %s\n", block.prevHash)
 	}
 }
-
+*/
 func main() {
-	blockchain := Blockchain{}
-	blockchain.addBlock("First Block")
-	blockchain.addBlock("Second Block")
-	blockchain.addBlock("Third Block")
-	blockchain.listBlocks()
+	chain := blockchain.GetBlockChain()
 }
