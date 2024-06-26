@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-type block struct {
+type Block struct {
 	data     string
 	hash     string
 	prevHash string
@@ -15,13 +15,13 @@ type block struct {
 type blockchain struct {
 	// block pointer slice
 	// NOTE: 블록을 추가할 때 전체블록이 복사될 수 있으므로, 포인터로 저장하여 메모리 사용량을 줄인다!
-	blocks []*block
+	blocks []*Block 
 }
 
 var bc *blockchain
 var once sync.Once
 
-func (b *block) calculateHash() {
+func (b *Block ) calculateHash() {
 	// 1. 추가할 블록의 해시 생성(data + 이전 블록의 해시)
 	hash := sha256.Sum256([]byte(b.data + b.prevHash))
 	// 2. 추가할 블록의 해시 업데이트(16진수 string으로 변환)
@@ -37,8 +37,8 @@ func getLastHash() string {
 	return totalBlocks[len(totalBlocks) - 1].hash
 }
 
-func createBlock(data string) *block {
-	newBlock := block{data, "", getLastHash()}
+func createBlock(data string) *Block {
+	newBlock := Block{data, "", getLastHash()}
 	newBlock.calculateHash()
 	return &newBlock
 }
@@ -49,11 +49,11 @@ func (bc *blockchain) AddBlock(data string) {
 	bc.blocks = append(bc.blocks, createBlock(data))
 }
 
-func (bc *blockchain) GetAllBlocks() []*block {
+func (bc *blockchain) GetAllBlocks() []*Block {
 	return bc.blocks
 }
 
-func (b *block) PrintBlock() {
+func (b *Block ) PrintBlock() {
 	fmt.Println("====================")
 	fmt.Printf("Data: %s\n", b.data)
 	fmt.Printf("Hash: %s\n", b.hash)
