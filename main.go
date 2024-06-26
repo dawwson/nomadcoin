@@ -1,15 +1,19 @@
 package main
 
 import (
-	"github.com/dawwson/nomadcoin/blockchain"
+	"fmt"
+	"log"
+	"net/http"
 )
 
+const port string = ":3000"
+
 func main() {
-	chain := blockchain.GetBlockChain()
-	chain.AddBlock("Second Block");
-	chain.AddBlock("Third Block");
-	chain.AddBlock("Fourth Block");
-	for _, block := range(chain.GetAllBlocks()) {
-		block.PrintBlock()
-	}
+	// GET /
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// NOTE: w - response, r - request(포인터, 실제 reqeust 사용)
+		fmt.Fprint(w, "Hello from home!")
+	})
+	fmt.Printf("Listening on http://localhost%s\n", port)
+	log.Fatal(http.ListenAndServe(port, nil))
 }
