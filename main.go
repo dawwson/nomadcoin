@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/dawwson/nomadcoin/blockchain"
+	"github.com/dawwson/nomadcoin/utils"
 )
 
 const (
@@ -30,6 +33,10 @@ type URLDescription struct {
 	Payload     string `json:"payload,omitempty"` // omitempty: 값이 비어있으면 필드 제거
 }
 
+type AddBlockBody struct {
+	Message string
+}
+
 func documentation(w http.ResponseWriter, r *http.Request) {
 	data := []URLDescription{
 		{
@@ -43,13 +50,32 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 			Description: "Add a Block",
 			Payload: "data:string",
 		},
+		{
+			URL: URL("/blocks/{id}"),
+			Method: "GET",
+			Description: "See a Block",
+		},
 	}
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
 
+func blocks(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+		case http.MethodGet: 
+			w.Header().Add("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(blockchain.GetBlockChain().GetAllBlocks())
+		case http.MethodPost:
+			var addBlockBody AddBlockBody 
+			utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody))
+			blockchain.GetBlockChain().AddBlock(addBlockBody.Message)
+			w.WriteHeader(http.StatusCreated)
+	}
+}
+
 func main() {
 	http.HandleFunc("/", documentation)
+	http.HandleFunc("/blocks", blocks)
 	fmt.Printf("Listening on http://localhost%s", port)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
