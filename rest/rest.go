@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/dawwson/nomadcoin/blockchain"
 	"github.com/dawwson/nomadcoin/utils"
+	"github.com/gorilla/mux"
 )
 
 const baseURL string = "http://localhost"
@@ -55,7 +57,7 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 			Payload: "data:string",
 		},
 		{
-			URL: url("/blocks/{id}"),
+			URL: url("/blocks/{height}"),
 			Method: "GET",
 			Description: "See a Block",
 		},
@@ -68,21 +70,31 @@ func blocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 		case http.MethodGet: 
 			w.Header().Add("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(blockchain.GetBlockChain().GetAllBlocks())
+			json.NewEncoder(w).Encode(blockchain.GetBlockChain().AllBlocks())
 		case http.MethodPost:
 			var b addBlockBody 
 			utils.HandleErr(json.NewDecoder(r.Body).Decode(&b))
 			blockchain.GetBlockChain().AddBlock(b.Message)
 			w.WriteHeader(http.StatusCreated)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
+func block(w http.ResponseWriter, r *http.Request) {
+	height, err := strconv.Atoi(mux.Vars(r)["height"])
+	utils.HandleErr(err)
+	block := blockchain.GetBlockChain().GetBlock(height)
+	json.NewEncoder(w).Encode(block)
+}
+
 func Start(at int) {
-	handler := http.NewServeMux()
-	handler.HandleFunc("/", documentation)
-	handler.HandleFunc("/blocks", blocks)
+	router := mux.NewRouter()
+	router.HandleFunc("/", documentation).Methods("GET")
+	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
+	router.HandleFunc("/blocks/{height:[0-9]+}", block).Methods("GET")
 	
 	port = fmt.Sprintf(":%d", at)
 	fmt.Printf("Rest Server is listening on http://localhost%s\n", port)
-	log.Fatal(http.ListenAndServe(port, handler))
+	log.Fatal(http.ListenAndServe(port, router))
 }

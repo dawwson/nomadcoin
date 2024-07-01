@@ -7,9 +7,10 @@ import (
 )
 
 type Block struct {
-	Data     string
-	Hash     string
-	PrevHash string
+	Data     string `json:"data"`
+	Hash     string `json:"hash"`
+	PrevHash string `json:"prevHash,omitempty"`
+	Height   int    `json:"height"`
 }
 
 type blockchain struct {
@@ -38,7 +39,7 @@ func getLastHash() string {
 }
 
 func createBlock(data string) *Block {
-	newBlock := Block{data, "", getLastHash()}
+	newBlock := Block{data, "", getLastHash(), len(GetBlockChain().blocks) + 1}
 	newBlock.calculateHash()
 	return &newBlock
 }
@@ -49,16 +50,12 @@ func (bc *blockchain) AddBlock(data string) {
 	bc.blocks = append(bc.blocks, createBlock(data))
 }
 
-func (bc *blockchain) GetAllBlocks() []*Block {
+func (bc *blockchain) AllBlocks() []*Block {
 	return bc.blocks
 }
 
-// TODO: 추후 삭제
-func (b *Block) PrintBlock() {
-	fmt.Println("====================")
-	fmt.Printf("Data: %s\n", b.Data)
-	fmt.Printf("Hash: %s\n", b.Hash)
-	fmt.Printf("Previous Hash: %s\n", b.PrevHash)
+func (bc *blockchain) GetBlock(height int) *Block {
+	return bc.blocks[height - 1]
 }
 
 func GetBlockChain() *blockchain {
@@ -66,7 +63,7 @@ func GetBlockChain() *blockchain {
 		once.Do(func ()  {
 			// 블록체인 인스턴스를 한 번만 생성해서 그 메모리 주소를 저장함
 			bc = &blockchain{}
-			bc.AddBlock("First Block")
+			bc.AddBlock("Genesis Block")
 		})
 	}
 	return bc
