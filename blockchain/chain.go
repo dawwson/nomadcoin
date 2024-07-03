@@ -2,6 +2,9 @@ package blockchain
 
 import (
 	"sync"
+
+	"github.com/dawwson/nomadcoin/db"
+	"github.com/dawwson/nomadcoin/utils"
 )
 
 type blockchain struct {
@@ -12,12 +15,17 @@ type blockchain struct {
 var bc *blockchain
 var once sync.Once
 
+func (bc *blockchain) persist() {
+	db.SaveBlockchain(utils.ToBytes(bc))
+}
+
 // ========= Export =========
 
 func (bc *blockchain) AddBlock(data string) {
-	block := createBlock(data, bc.LatestHash, bc.Height)
+	block := createBlock(data, bc.LatestHash, bc.Height+1)
 	bc.LatestHash = block.Hash
 	bc.Height = block.Height
+	bc.persist()
 }
 
 // NOTE: singleton pattern
