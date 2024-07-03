@@ -64,6 +64,7 @@ func (bc *blockchain) GetBlock(height int) (*Block, error) {
 	return bc.blocks[height - 1], nil
 }
 
+// NOTE: singleton pattern
 func GetBlockChain() *blockchain {
 	if bc == nil {
 		once.Do(func ()  {

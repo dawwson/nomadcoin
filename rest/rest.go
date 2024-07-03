@@ -96,13 +96,26 @@ func block(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// NOTE: apater pattern
+func jsonContentTypeMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
+}
+
+// ========= Export =========
+
 func Start(at int) {
+	port = fmt.Sprintf(":%d", at)
+	
 	router := mux.NewRouter()
+	router.Use(jsonContentTypeMiddleware)
+
 	router.HandleFunc("/", documentation).Methods("GET")
 	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	router.HandleFunc("/blocks/{height:[0-9]+}", block).Methods("GET")
 	
-	port = fmt.Sprintf(":%d", at)
 	fmt.Printf("Rest Server is listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, router))
 }
