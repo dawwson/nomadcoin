@@ -6,6 +6,7 @@ import (
 	"log"
 )
 
+// 에러 핸들링
 func HandleErr(err error) {
 	if err != nil {
 		log.Panic(err)
