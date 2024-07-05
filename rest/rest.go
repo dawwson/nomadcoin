@@ -17,14 +17,6 @@ var port string
 
 type url string
 
-// NOTE: https://pkg.go.dev/encoding#TextMarshaler
-// TextMarshaler 인터페이스를 implements 키워드 없이 암묵적으로 구현합니다.
-// URL이 어떻게 JSON으로 마샬링 될 지를 구현합니다.
-func (path url) MarshalText() ([]byte, error) {
-	totalUrl := fmt.Sprintf("%s%s%s", baseURL, port, path)
-	return []byte(totalUrl), nil
-}
-
 type urlDescription struct {
 	// NOTE: struct field tag - struct가 json으로 변환될 때 tag에 지정한 이름으로 변경됨
 	URL         url    `json:"url"`
@@ -41,6 +33,15 @@ type errorResponse struct {
 	ErrorMessage string `json:"errorMessage"`
 }
 
+// url json 마샬링 지정
+func (path url) MarshalText() ([]byte, error) {
+	// NOTE: https://pkg.go.dev/encoding#TextMarshaler
+	// TextMarshaler 인터페이스를 implements 키워드 없이 암묵적으로 구현
+	totalUrl := fmt.Sprintf("%s%s%s", baseURL, port, path)
+	return []byte(totalUrl), nil
+}
+
+// GET /
 func documentation(w http.ResponseWriter, r *http.Request) {
 	data := []urlDescription{
 		{
@@ -70,6 +71,7 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(data)
 }
 
+// GET /blocks, POST /blocks
 func blocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -84,6 +86,7 @@ func blocks(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GET /blocks/{hash}
 func block(w http.ResponseWriter, r *http.Request) {
 	hash := mux.Vars(r)["hash"]
 
@@ -95,8 +98,9 @@ func block(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// NOTE: apater pattern
+// Content-Type: application/json 헤더 지정해주는 미들웨어
 func jsonContentTypeMiddleware(next http.Handler) http.Handler {
+	// NOTE: apater pattern
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
