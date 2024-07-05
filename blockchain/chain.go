@@ -16,16 +16,19 @@ type blockchain struct {
 var bc *blockchain
 var once sync.Once
 
-func (bc *blockchain) restore(data []byte) {
-	utils.FromBytes(bc, data)
-}
-
+// 블록체인 저장
 func (bc *blockchain) persist() {
 	db.SaveCheckpoint(utils.ToBytes(bc))
 }
 
+// 블록체인 복원
+func (bc *blockchain) restore(data []byte) {
+	utils.FromBytes(bc, data)
+}
+
 // ========= Export =========
 
+// 블록체인에 블록 추가
 func (bc *blockchain) AddBlock(data string) {
 	block := createBlock(data, bc.LatestHash, bc.Height+1)
 	bc.LatestHash = block.Hash
@@ -53,7 +56,7 @@ func (bc *blockchain) Blocks() []*Block {
 	return blocks
 }
 
-// 블록체인 조회
+// 블록체인 불러오기
 func BlockChain() *blockchain {
 	// NOTE: singleton pattern - 블록체인 인스턴스를 한 번만 생성
 	if bc == nil {
