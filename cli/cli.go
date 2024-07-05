@@ -10,6 +10,7 @@ import (
 	"github.com/dawwson/nomadcoin/rest"
 )
 
+// 콘솔에 사용 안내 메세지 출력
 func usage() {
 	fmt.Printf("💛 Welcome to Nomad Coin\n\n")
 	fmt.Printf("Please use the following flags\n\n")
@@ -19,6 +20,8 @@ func usage() {
 	// defer 함수 실행 후 프로그램 종료
 	runtime.Goexit()
 }
+
+// ========= Export =========
 
 func Start() {
 	if len(os.Args) == 1 {
