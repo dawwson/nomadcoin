@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/dawwson/nomadcoin/explorer"
 	"github.com/dawwson/nomadcoin/rest"
@@ -14,7 +15,9 @@ func usage() {
 	fmt.Printf("Please use the following flags\n\n")
 	fmt.Printf("-port:   Set the PORT of the server\n")
 	fmt.Printf("-mode:   Choose between 'html' and 'rest'\n\n")
-	os.Exit(0)
+
+	// defer 함수 실행 후 프로그램 종료
+	runtime.Goexit()
 }
 
 func Start() {

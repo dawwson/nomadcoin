@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/dawwson/nomadcoin/blockchain"
+	"github.com/dawwson/nomadcoin/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -72,15 +73,12 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 func blocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		return
-		// w.Header().Add("Content-Type", "application/json")
-		// json.NewEncoder(w).Encode(blockchain.GetBlockChain().AllBlocks())
+		json.NewEncoder(w).Encode(blockchain.BlockChain().Blocks())
 	case http.MethodPost:
-		return
-		// var b addBlockBody
-		// utils.HandleErr(json.NewDecoder(r.Body).Decode(&b))
-		// blockchain.GetBlockChain().AddBlock(b.Message)
-		// w.WriteHeader(http.StatusCreated)
+		var b addBlockBody
+		utils.HandleErr(json.NewDecoder(r.Body).Decode(&b))
+		blockchain.BlockChain().AddBlock(b.Message)
+		w.WriteHeader(http.StatusCreated)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
