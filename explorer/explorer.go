@@ -18,12 +18,14 @@ type homeData struct {
 	Blocks    []*blockchain.Block
 }
 
-// NOTE: w - response, r - request(포인터, 실제 reqeust 사용)
+// GET / - home 템플릿 로딩
 func home(w http.ResponseWriter, r *http.Request) {
 	data := homeData{"Home", nil}
 	templates.ExecuteTemplate(w, "home", data)
 }
 
+// GET /add - add 템플릿 로딩 &
+// FIXME: POST /add - 블록 추가 (REST API랑 중복?)
 func add(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
@@ -36,6 +38,8 @@ func add(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ========= Export =========
+
 func Start(port int) {
 	// load templates
 	// NOTE: Must - 에러가 발생하면 출력해줌
@@ -45,6 +49,7 @@ func Start(port int) {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/", home)
 	handler.HandleFunc("/add", add)
+
 	fmt.Printf("Explorer is listening on http://localhost:%d\n", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), handler))
 }
