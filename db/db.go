@@ -48,8 +48,8 @@ func SaveBlock(hash string, data []byte) {
 	utils.HandleErr(err)
 }
 
-// data bucket에 블록체인 저장 (key: checkpoint, value: blockchain)
-func SaveBlockchain(data []byte) {
+// data bucket에 checkpoint 저장 (key: "checkpoint", value: blockchain)
+func SaveCheckpoint(data []byte) {
 	err := DB().Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(dataBucket))
 		err := bucket.Put([]byte(checkpoint), data)
@@ -58,6 +58,7 @@ func SaveBlockchain(data []byte) {
 	utils.HandleErr(err)
 }
 
+// data bucket에서 checkpoint 조회
 func Checkpoint() []byte {
 	var data []byte
 	DB().View(func(tx *bolt.Tx) error {
@@ -68,6 +69,7 @@ func Checkpoint() []byte {
 	return data
 }
 
+// blocks bucket에서 hash로 특정 block 조회
 func Block(hash string) []byte {
 	var data []byte
 	DB().View(func(tx *bolt.Tx) error {

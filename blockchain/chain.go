@@ -21,7 +21,7 @@ func (bc *blockchain) restore(data []byte) {
 }
 
 func (bc *blockchain) persist() {
-	db.SaveBlockchain(utils.ToBytes(bc))
+	db.SaveCheckpoint(utils.ToBytes(bc))
 }
 
 // ========= Export =========
