@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/dawwson/nomadcoin/blockchain"
-	"github.com/dawwson/nomadcoin/utils"
 	"github.com/gorilla/mux"
 )
 
 const baseURL string = "http://localhost"
+
 var port string
 
 type url string
@@ -27,7 +26,7 @@ func (path url) MarshalText() ([]byte, error) {
 
 type urlDescription struct {
 	// NOTE: struct field tag - struct가 json으로 변환될 때 tag에 지정한 이름으로 변경됨
-	URL         url `json:"url"`
+	URL         url    `json:"url"`
 	Method      string `json:"method"`
 	Description string `json:"description"`
 	Payload     string `json:"payload,omitempty"` // omitempty: 값이 비어있으면 필드 제거
@@ -44,25 +43,25 @@ type errorResponse struct {
 func documentation(w http.ResponseWriter, r *http.Request) {
 	data := []urlDescription{
 		{
-			URL: url("/"),
-			Method: "GET",
+			URL:         url("/"),
+			Method:      "GET",
 			Description: "See Documentation",
 		},
 		{
-			URL: url("/blocks"),
-			Method: "GET",
+			URL:         url("/blocks"),
+			Method:      "GET",
 			Description: "See All Blocks",
-			Payload: "data:string",
+			Payload:     "data:string",
 		},
 		{
-			URL: url("/blocks"),
-			Method: "POST",
+			URL:         url("/blocks"),
+			Method:      "POST",
 			Description: "Add a Block",
-			Payload: "data:string",
+			Payload:     "data:string",
 		},
 		{
-			URL: url("/blocks/{height}"),
-			Method: "GET",
+			URL:         url("/blocks/{hash}"),
+			Method:      "GET",
 			Description: "See a Block",
 		},
 	}
@@ -72,23 +71,25 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 
 func blocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-		case http.MethodGet: 
-			w.Header().Add("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(blockchain.GetBlockChain().AllBlocks())
-		case http.MethodPost:
-			var b addBlockBody 
-			utils.HandleErr(json.NewDecoder(r.Body).Decode(&b))
-			blockchain.GetBlockChain().AddBlock(b.Message)
-			w.WriteHeader(http.StatusCreated)
-		default:
-			w.WriteHeader(http.StatusMethodNotAllowed)
+	case http.MethodGet:
+		return
+		// w.Header().Add("Content-Type", "application/json")
+		// json.NewEncoder(w).Encode(blockchain.GetBlockChain().AllBlocks())
+	case http.MethodPost:
+		return
+		// var b addBlockBody
+		// utils.HandleErr(json.NewDecoder(r.Body).Decode(&b))
+		// blockchain.GetBlockChain().AddBlock(b.Message)
+		// w.WriteHeader(http.StatusCreated)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
 func block(w http.ResponseWriter, r *http.Request) {
-	height, err := strconv.Atoi(mux.Vars(r)["height"])
-	utils.HandleErr(err)
-	block, err := blockchain.GetBlockChain().GetBlock(height)
+	hash := mux.Vars(r)["hash"]
+
+	block, err := blockchain.FindBlock(hash)
 	if err == blockchain.ErrNotFound {
 		json.NewEncoder(w).Encode(errorResponse{fmt.Sprint(err)})
 	} else {
@@ -108,14 +109,14 @@ func jsonContentTypeMiddleware(next http.Handler) http.Handler {
 
 func Start(at int) {
 	port = fmt.Sprintf(":%d", at)
-	
+
 	router := mux.NewRouter()
 	router.Use(jsonContentTypeMiddleware)
 
 	router.HandleFunc("/", documentation).Methods("GET")
 	router.HandleFunc("/blocks", blocks).Methods("GET", "POST")
-	router.HandleFunc("/blocks/{height:[0-9]+}", block).Methods("GET")
-	
+	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET")
+
 	fmt.Printf("Rest Server is listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, router))
 }

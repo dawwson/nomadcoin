@@ -20,7 +20,7 @@ type homeData struct {
 
 // NOTE: w - response, r - request(포인터, 실제 reqeust 사용)
 func home(w http.ResponseWriter, r *http.Request) {
-	data := homeData{"Home", blockchain.GetBlockChain().AllBlocks()}
+	data := homeData{"Home", nil}
 	templates.ExecuteTemplate(w, "home", data)
 }
 
@@ -28,16 +28,16 @@ func add(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		templates.ExecuteTemplate(w, "add", nil)
-	case "POST": 
+	case "POST":
 		r.ParseForm()
 		data := r.Form.Get("blockData")
-		blockchain.GetBlockChain().AddBlock(data)
+		blockchain.BlockChain().AddBlock(data)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
 
 func Start(port int) {
-		// load templates
+	// load templates
 	// NOTE: Must - 에러가 발생하면 출력해줌
 	templates = template.Must(template.ParseGlob(templateDir + "pages/*.gohtml"))
 	templates = template.Must(templates.ParseGlob(templateDir + "partials/*.gohtml"))
