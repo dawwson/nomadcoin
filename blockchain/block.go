@@ -1,16 +1,13 @@
 package blockchain
 
 import (
-	"crypto/sha256"
 	"errors"
-	"fmt"
 	"strings"
+	"time"
 
 	"github.com/dawwson/nomadcoin/db"
 	"github.com/dawwson/nomadcoin/utils"
 )
-
-const difficulty int = 2 // 0이 2개로 시작하는 hash를 찾는다.
 
 type Block struct {
 	Data       string `json:"data"`
@@ -19,6 +16,7 @@ type Block struct {
 	Height     int    `json:"height"`
 	Difficulty int    `json:"difficulty"`
 	Nonce      int    `json:"nonce"`
+	Timestamp  int    `json:"timestamp"`
 }
 
 // 블록 저장
@@ -33,15 +31,15 @@ func (b *Block) restore(data []byte) {
 
 // 마이닝 : 조건(difficulty 만큼의 0으로 시작)에 맞는 해시를 생성하는 nonce를 찾는다.
 func (b *Block) mine() {
-	target := strings.Repeat("0", difficulty)
+	target := strings.Repeat("0", b.Difficulty)
 
 	for {
-		// block을 string으로 변환하여 해시 생성
-		blockAsString := fmt.Sprint(b)
-		hash := fmt.Sprintf("%x", sha256.Sum256([]byte(blockAsString)))
-		fmt.Printf("Block as String: %s\nHash: %s\nTarget: %s\nNonce: %d\n\n\n", blockAsString, hash, target, b.Nonce)
+		// block 생성 시간 추가
+		b.Timestamp = int(time.Now().Unix())
+		// block 해시 생성
+		hash := utils.Hash(b)
 
-		// hash의 prefix가 target이면 그 해시를 블록의 해시로 지정
+		// 생성한 해시가 target으로 시작하면 block의 hash로 지정
 		if strings.HasPrefix(hash, target) {
 			b.Hash = hash
 			break
@@ -59,7 +57,7 @@ func createBlock(data string, prevHash string, height int) *Block {
 		Hash:       "",
 		PrevHash:   prevHash,
 		Height:     height,
-		Difficulty: difficulty,
+		Difficulty: BlockChain().difficulty(),
 		Nonce:      0,
 	}
 
